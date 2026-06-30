@@ -1,468 +1,1326 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TataPower — Field Engineer App</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="image-slot.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'IBM Plex Sans', sans-serif;
-    background: #1a1a2e;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px 16px;
-  }
-  .stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .stage-label {
-    color: rgba(255,255,255,.38);
-    font-size: 11px;
-    letter-spacing: .8px;
-    text-transform: uppercase;
-    font-family: 'IBM Plex Sans', sans-serif;
-  }
-  /* ── Device Shell ── */
-  .device {
-    width: 375px;
-    background: #000;
-    border-radius: 50px;
-    padding: 14px;
-    box-shadow: 0 0 0 1px #333, 0 40px 80px rgba(0,0,0,.7), inset 0 0 0 1px #444;
-    position: relative;
-  }
-  .device-inner {
-    width: 100%;
-    border-radius: 38px;
-    overflow: hidden;
-    background: #f0f2f5;
-    position: relative;
-  }
-  /* Dynamic island */
-  .dynamic-island {
-    position: absolute;
-    top: 12px; left: 50%; transform: translateX(-50%);
-    width: 120px; height: 34px;
-    background: #000; border-radius: 20px;
-    z-index: 100;
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: 10px; gap: 6px;
-  }
-  .di-cam { width: 10px; height: 10px; background: #1a1a1a; border-radius: 50%; border: 2px solid #2a2a2a; }
-  .di-led { width: 6px; height: 6px; background: #0c4; border-radius: 50%; opacity: .7; }
-  /* Status bar */
-  .status-bar {
-    height: 54px;
-    background: inherit;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    padding: 0 24px 6px;
-    font-size: 12px; font-weight: 600;
-    position: relative; z-index: 10;
-  }
-  .sb-time { font-size: 15px; font-weight: 700; }
-  .sb-icons { display: flex; align-items: center; gap: 6px; }
-  /* Screen container */
-  .screen-wrap {
-    height: 780px;
-    overflow: hidden;
-    position: relative;
-  }
-  .screen {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    transition: transform .32s cubic-bezier(.4,0,.2,1), opacity .25s;
-    will-change: transform;
-  }
-  .screen.hidden-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
-  .screen.hidden-left  { transform: translateX(-30%); opacity: 0; pointer-events: none; }
-  /* Home indicator */
-  .home-bar {
-    height: 34px; background: inherit;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .home-pill { width: 134px; height: 5px; background: #000; border-radius: 3px; opacity: .18; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TataPower — Field Engineer App</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+    integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+    integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+    integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+    crossorigin="anonymous"></script>
+  <script src="image-slot.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ── App Styles ── */
-  :root {
-    --navy: #0C1D56; --red: #D42027; --bg: #F0F2F7;
-    --card: #fff; --bdr: #E2E8F0; --txt: #111827;
-    --txt2: #4B5563; --txt3: #9CA3AF;
-    --g: #059669; --gbg: #ECFDF5;
-    --w: #D97706; --wbg: #FFFBEB;
-    --e: #DC2626; --ebg: #FEF2F2;
-    --b: #1D4ED8; --bbg: #EFF6FF;
-  }
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
 
-  /* LOGIN */
-  .login-bg {
-    min-height: 780px;
-    background: linear-gradient(165deg, #0C1D56 0%, #1B2E8A 55%, #0C1D56 100%);
-    display: flex; flex-direction: column;
-    align-items: center; padding: 60px 28px 32px;
-    position: relative; overflow: hidden;
-  }
-  .login-bg::before {
-    content: '';
-    position: absolute; top: -80px; right: -80px;
-    width: 260px; height: 260px;
-    background: radial-gradient(circle, rgba(212,32,39,.25) 0%, transparent 70%);
-    border-radius: 50%;
-  }
-  .login-logo { width: 80px; height: 52px; background: transparent; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: visible; }
-  .login-logo svg { width: 80px; height: 52px; }
-  .login-logo-t { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -1px; display: none; }
-  .login-app-n { color: rgba(255,255,255,.95); font-size: 19px; font-weight: 700; margin-bottom: 3px; }
-  .login-sub   { color: rgba(255,255,255,.45); font-size: 12px; margin-bottom: 44px; }
-  .login-card  { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-    border-radius: 18px; padding: 24px 20px; width: 100%; backdrop-filter: blur(12px); }
-  .login-role { display: flex; gap: 8px; margin-bottom: 20px; }
-  .role-btn { flex: 1; padding: 9px 6px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.18);
-    background: transparent; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 500;
-    font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; transition: all .15s; text-align: center; }
-  .role-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
-  .lf { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.45); letter-spacing: .5px;
-    text-transform: uppercase; margin-bottom: 5px; }
-  .lfc { width: 100%; height: 44px; background: rgba(255,255,255,.09); border: 1.5px solid rgba(255,255,255,.15);
-    border-radius: 10px; padding: 0 14px; font-size: 14px; color: #fff;
-    font-family: 'IBM Plex Sans', sans-serif; margin-bottom: 14px; outline: none; }
-  .lfc::placeholder { color: rgba(255,255,255,.3); }
-  .lfc:focus { border-color: rgba(255,255,255,.4); }
-  .pin-row { display: flex; gap: 10px; margin-bottom: 16px; }
-  .pin-dot { flex: 1; height: 44px; background: rgba(255,255,255,.09); border: 1.5px solid rgba(255,255,255,.15);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
-  .login-btn { width: 100%; height: 48px; background: var(--red); border: none; border-radius: 12px;
-    color: #fff; font-size: 15px; font-weight: 700; font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer; margin-top: 6px; transition: opacity .15s; letter-spacing: .3px; }
-  .login-btn:hover { opacity: .9; }
-  .login-vendor-badge { margin-top: 20px; text-align: center; }
-  .vendor-tag { display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 20px; padding: 5px 12px; }
-  .vendor-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; }
-  .vendor-tag-t { font-size: 11.5px; color: rgba(255,255,255,.6); }
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
 
-  /* TOP NAV (app screens) */
-  .app-header {
-    background: var(--navy); padding: 14px 18px 12px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 50;
-  }
-  .ah-back { width: 32px; height: 32px; background: rgba(255,255,255,.1); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
-  .ah-title { font-size: 15px; font-weight: 700; color: #fff; }
-  .ah-sub   { font-size: 10.5px; color: rgba(255,255,255,.5); margin-top: 1px; text-align: center; }
-  .ah-right { width: 32px; height: 32px; background: rgba(255,255,255,.1); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+    .stage-label {
+      color: rgba(255, 255, 255, .38);
+      font-size: 11px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
 
-  /* HOME */
-  .home-hero {
-    background: linear-gradient(135deg, var(--navy) 0%, #1B2E8A 100%);
-    padding: 14px 18px 22px;
-  }
-  .hero-greeting { font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: .4px; text-transform: uppercase; }
-  .hero-name { font-size: 20px; font-weight: 700; color: #fff; margin-top: 2px; }
-  .hero-meta { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-  .hero-pill { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 20px; padding: 4px 10px; font-size: 11px; color: rgba(255,255,255,.75);
-    display: flex; align-items: center; gap: 4px; }
-  .hero-pill-dot { width: 5px; height: 5px; background: #4ade80; border-radius: 50%; }
+    /* ── Device Shell ── */
+    .device {
+      width: 375px;
+      background: #000;
+      border-radius: 50px;
+      padding: 14px;
+      box-shadow: 0 0 0 1px #333, 0 40px 80px rgba(0, 0, 0, .7), inset 0 0 0 1px #444;
+      position: relative;
+    }
 
-  .home-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-    padding: 12px 14px 0; margin-top: -14px; position: relative; z-index: 5; }
-  .hs-card { background: #fff; border-radius: 12px; padding: 10px 10px 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-  .hs-v { font-size: 22px; font-weight: 700; color: var(--txt); line-height: 1; }
-  .hs-l { font-size: 10px; color: var(--txt2); margin-top: 2px; }
+    .device-inner {
+      width: 100%;
+      border-radius: 38px;
+      overflow: hidden;
+      background: #f0f2f5;
+      position: relative;
+    }
 
-  .section-header { padding: 16px 16px 8px; display: flex; align-items: center; justify-content: space-between; }
-  .sh-title { font-size: 14px; font-weight: 700; color: var(--txt); }
-  .sh-link  { font-size: 12px; color: var(--b); font-weight: 500; cursor: pointer; }
+    /* Dynamic island */
+    .dynamic-island {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      gap: 6px;
+    }
 
-  .act-card {
-    margin: 0 14px 10px; background: #fff; border-radius: 14px;
-    box-shadow: 0 1px 8px rgba(0,0,0,.06); overflow: hidden; cursor: pointer;
-    border: 1.5px solid transparent; transition: border-color .15s;
-  }
-  .act-card:active { border-color: var(--navy); }
-  .act-card-head { padding: 12px 14px 8px; display: flex; align-items: flex-start; justify-content: space-between; }
-  .act-name { font-size: 13.5px; font-weight: 600; color: var(--txt); }
-  .act-path { font-size: 10.5px; color: var(--txt3); margin-top: 2px; line-height: 1.4; }
-  .act-body { padding: 0 14px 12px; }
-  .act-prog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .act-pr { flex: 1; height: 6px; background: #E5E7EB; border-radius: 3px; overflow: hidden; }
-  .act-pr-f { height: 100%; border-radius: 3px; background: var(--b); }
-  .act-pr-pct { font-size: 11px; font-weight: 600; color: var(--txt2); width: 30px; text-align: right; }
-  .act-nums { display: flex; gap: 12px; }
-  .act-num { font-size: 11px; color: var(--txt2); }
-  .act-num strong { color: var(--txt); }
-  .act-foot { background: #FAFBFF; padding: 7px 14px; border-top: 1px solid var(--bdr);
-    display: flex; align-items: center; justify-content: space-between; }
-  .enter-btn { background: var(--navy); color: #fff; border: none; border-radius: 8px;
-    padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .di-cam {
+      width: 10px;
+      height: 10px;
+      background: #1a1a1a;
+      border-radius: 50%;
+      border: 2px solid #2a2a2a;
+    }
 
-  .chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px;
-    font-size: 10.5px; font-weight: 500; }
-  .c-g { background: var(--gbg); color: var(--g); }
-  .c-y { background: var(--wbg); color: var(--w); }
-  .c-b { background: var(--bbg); color: var(--b); }
-  .c-r { background: var(--ebg); color: var(--e); }
-  .c-x { background: #F3F4F6; color: var(--txt2); }
-  .c-n { background: #EEF2FF; color: var(--navy); }
+    .di-led {
+      width: 6px;
+      height: 6px;
+      background: #0c4;
+      border-radius: 50%;
+      opacity: .7;
+    }
 
-  .notice-bar { margin: 0 14px 10px; background: var(--wbg); border: 1px solid #FDE68A;
-    border-radius: 12px; padding: 10px 12px; display: flex; gap: 8px; }
-  .nb-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-  .nb-t { font-size: 12px; font-weight: 600; color: #92400E; }
-  .nb-s { font-size: 11px; color: #B45309; margin-top: 1px; }
+    /* Status bar */
+    .status-bar {
+      height: 54px;
+      background: inherit;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 24px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      position: relative;
+      z-index: 10;
+    }
 
-  /* ENTRY FORM */
-  .entry-bg { background: var(--bg); min-height: 780px; }
-  .entry-hero { background: var(--navy); padding: 14px 18px 18px; }
-  .entry-act-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; }
-  .entry-breadcrumb { font-size: 10.5px; color: rgba(255,255,255,.45); margin-top: 4px;
-    display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .bc-sep { opacity: .4; }
-  .entry-meta-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .sb-time {
+      font-size: 15px;
+      font-weight: 700;
+    }
 
-  .form-card { background: #fff; margin: 12px 14px; border-radius: 14px;
-    box-shadow: 0 1px 8px rgba(0,0,0,.06); overflow: hidden; }
-  .fc-head { padding: 12px 14px 8px; border-bottom: 1px solid #F1F5F9; }
-  .fc-head-t { font-size: 12.5px; font-weight: 700; color: var(--txt); }
-  .fc-head-s { font-size: 11px; color: var(--txt3); margin-top: 1px; }
-  .fc-body { padding: 14px; }
+    .sb-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-  .fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
-  .fg:last-child { margin-bottom: 0; }
-  .fl { font-size: 10.5px; font-weight: 600; color: var(--txt2); text-transform: uppercase; letter-spacing: .5px; }
-  .fi { width: 100%; height: 46px; padding: 0 14px; border: 1.5px solid var(--bdr);
-    border-radius: 10px; font-size: 15px; font-family: 'IBM Plex Sans', sans-serif;
-    color: var(--txt); background: #fff; outline: none; transition: border-color .15s; }
-  .fi:focus { border-color: var(--navy); }
-  .fi-big { height: 52px; font-size: 24px; font-weight: 700; text-align: center;
-    letter-spacing: 2px; color: var(--navy); }
-  .fi-unit { text-align: right; padding-right: 46px; position: relative; }
-  .fi-unit-label { position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    font-size: 12px; font-weight: 600; color: var(--txt3); pointer-events: none; }
+    /* Screen container */
+    .screen-wrap {
+      height: 780px;
+      overflow: hidden;
+      position: relative;
+    }
 
-  .target-row { display: flex; gap: 8px; margin-bottom: 14px; }
-  .target-card { flex: 1; background: #F8FAFF; border: 1px solid #E0E9FF; border-radius: 10px;
-    padding: 10px 12px; }
-  .tc-v { font-size: 17px; font-weight: 700; color: var(--navy); }
-  .tc-l { font-size: 10px; color: var(--txt3); margin-top: 1px; }
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      transition: transform .32s cubic-bezier(.4, 0, .2, 1), opacity .25s;
+      will-change: transform;
+    }
 
-  .quick-btns { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-  .qb { padding: 6px 12px; background: #EEF2FF; border: 1.5px solid #C7D2FE; border-radius: 8px;
-    font-size: 12px; font-weight: 600; color: var(--navy); cursor: pointer; border: none;
-    font-family: 'IBM Plex Sans', sans-serif; background: #EEF2FF; transition: background .12s; }
-  .qb:hover { background: #C7D2FE; }
+    .screen.hidden-right {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
 
-  .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .photo-slot-wrap { border-radius: 10px; overflow: hidden; }
-  .add-photo-btn { border: 2px dashed var(--bdr); border-radius: 10px; height: 90px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; cursor: pointer; background: #FAFBFF; transition: background .12s; }
-  .add-photo-btn:hover { background: #EEF2FF; }
-  .apb-icon { font-size: 20px; opacity: .4; }
-  .apb-t { font-size: 11px; color: var(--txt3); font-weight: 500; }
+    .screen.hidden-left {
+      transform: translateX(-30%);
+      opacity: 0;
+      pointer-events: none;
+    }
 
-  .remarks-ta { width: 100%; min-height: 72px; padding: 10px 12px; border: 1.5px solid var(--bdr);
-    border-radius: 10px; font-size: 13px; font-family: 'IBM Plex Sans', sans-serif;
-    color: var(--txt); resize: none; outline: none; line-height: 1.5; }
-  .remarks-ta:focus { border-color: var(--navy); }
+    /* Home indicator */
+    .home-bar {
+      height: 34px;
+      background: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  .gps-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-    background: var(--gbg); border: 1px solid #A7F3D0; border-radius: 10px; margin-bottom: 14px; }
-  .gps-dot { width: 8px; height: 8px; background: var(--g); border-radius: 50%; flex-shrink: 0;
-    box-shadow: 0 0 0 3px rgba(5,150,105,.2); }
-  .gps-t { font-size: 12px; font-weight: 500; color: var(--g); }
-  .gps-s { font-size: 10.5px; color: #6EE7B7; margin-top: 1px; }
+    .home-pill {
+      width: 134px;
+      height: 5px;
+      background: #000;
+      border-radius: 3px;
+      opacity: .18;
+    }
 
-  .submit-btn { width: calc(100% - 28px); margin: 0 14px 16px; height: 52px;
-    background: var(--red); border: none; border-radius: 14px; color: #fff;
-    font-size: 16px; font-weight: 700; font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer; transition: opacity .15s; letter-spacing: .3px;
-    display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .submit-btn:hover { opacity: .92; }
-  .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+    /* ── App Styles ── */
+    :root {
+      --navy: #0C1D56;
+      --red: #D42027;
+      --bg: #F0F2F7;
+      --card: #fff;
+      --bdr: #E2E8F0;
+      --txt: #111827;
+      --txt2: #4B5563;
+      --txt3: #9CA3AF;
+      --g: #059669;
+      --gbg: #ECFDF5;
+      --w: #D97706;
+      --wbg: #FFFBEB;
+      --e: #DC2626;
+      --ebg: #FEF2F2;
+      --b: #1D4ED8;
+      --bbg: #EFF6FF;
+    }
 
-  /* CONFIRMATION */
-  .confirm-bg { min-height: 780px; background: #fff; display: flex; flex-direction: column;
-    align-items: center; padding: 60px 28px 32px; }
-  .confirm-icon { width: 72px; height: 72px; background: var(--gbg); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-  .confirm-icon svg { width: 36px; height: 36px; }
-  .confirm-title { font-size: 20px; font-weight: 700; color: var(--txt); margin-bottom: 6px; text-align: center; }
-  .confirm-sub { font-size: 13px; color: var(--txt2); text-align: center; line-height: 1.6; margin-bottom: 28px; }
-  .confirm-summary { background: #F8FAFF; border: 1px solid #E0E9FF; border-radius: 14px;
-    padding: 16px; width: 100%; margin-bottom: 24px; }
-  .cs-row { display: flex; justify-content: space-between; align-items: center;
-    padding: 5px 0; border-bottom: 1px solid #EEF2FF; font-size: 13px; }
-  .cs-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .cs-k { color: var(--txt2); }
-  .cs-v { font-weight: 600; color: var(--txt); }
-  .confirm-btn-p { width: 100%; height: 50px; background: var(--navy); border: none; border-radius: 14px;
-    color: #fff; font-size: 15px; font-weight: 700; font-family: 'IBM Plex Sans', sans-serif;
-    cursor: pointer; margin-bottom: 10px; }
-  .confirm-btn-s { width: 100%; height: 44px; background: transparent; border: 1.5px solid var(--bdr);
-    border-radius: 14px; color: var(--txt2); font-size: 14px; font-weight: 500;
-    font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; }
+    /* LOGIN */
+    .login-bg {
+      min-height: 780px;
+      background: linear-gradient(165deg, #0C1D56 0%, #1B2E8A 55%, #0C1D56 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 28px 32px;
+      position: relative;
+      overflow: hidden;
+    }
 
-  /* Bottom nav */
-  .bottom-nav { background: #fff; border-top: 1px solid var(--bdr);
-    display: flex; padding: 8px 0 4px; position: sticky; bottom: 0; z-index: 50; }
-  .bn-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: pointer; padding: 4px 0; }
-  .bn-icon { width: 22px; height: 22px; color: var(--txt3); }
-  .bn-label { font-size: 10px; color: var(--txt3); font-weight: 500; }
-  .bn-item.active .bn-icon { color: var(--navy); }
-  .bn-item.active .bn-label { color: var(--navy); font-weight: 600; }
+    .login-bg::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(212, 32, 39, .25) 0%, transparent 70%);
+      border-radius: 50%;
+    }
 
-  /* History screen */
-  .hist-item { margin: 0 14px 8px; background: #fff; border-radius: 12px;
-    padding: 12px 14px; box-shadow: 0 1px 6px rgba(0,0,0,.05); }
-  .hi-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
-  .hi-name { font-size: 13px; font-weight: 600; color: var(--txt); }
-  .hi-date { font-size: 11px; color: var(--txt3); }
-  .hi-meta { font-size: 11.5px; color: var(--txt2); display: flex; gap: 10px; }
+    .login-logo {
+      width: 80px;
+      height: 52px;
+      background: transparent;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      overflow: visible;
+    }
 
-  /* date badge */
-  .date-badge { margin: 16px 14px 6px; font-size: 11px; font-weight: 600;
-    color: var(--txt3); text-transform: uppercase; letter-spacing: .6px; }
+    .login-logo svg {
+      width: 80px;
+      height: 52px;
+    }
 
-  .scroll-pb { height: 24px; }
-</style>
+    .login-logo-t {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      display: none;
+    }
+
+    .login-app-n {
+      color: rgba(255, 255, 255, .95);
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .login-sub {
+      color: rgba(255, 255, 255, .45);
+      font-size: 12px;
+      margin-bottom: 44px;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 18px;
+      padding: 24px 20px;
+      width: 100%;
+      backdrop-filter: blur(12px);
+    }
+
+    .login-role {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .role-btn {
+      flex: 1;
+      padding: 9px 6px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, .18);
+      background: transparent;
+      color: rgba(255, 255, 255, .55);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+
+    .role-btn.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .lf {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, .45);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .lfc {
+      width: 100%;
+      height: 44px;
+      background: rgba(255, 255, 255, .09);
+      border: 1.5px solid rgba(255, 255, 255, .15);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 14px;
+      color: #fff;
+      font-family: 'IBM Plex Sans', sans-serif;
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .lfc::placeholder {
+      color: rgba(255, 255, 255, .3);
+    }
+
+    .lfc:focus {
+      border-color: rgba(255, 255, 255, .4);
+    }
+
+    .pin-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .pin-dot {
+      flex: 1;
+      height: 44px;
+      background: rgba(255, 255, 255, .09);
+      border: 1.5px solid rgba(255, 255, 255, .15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 48px;
+      background: var(--red);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity .15s;
+      letter-spacing: .3px;
+    }
+
+    .login-btn:hover {
+      opacity: .9;
+    }
+
+    .login-vendor-badge {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .vendor-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 20px;
+      padding: 5px 12px;
+    }
+
+    .vendor-dot {
+      width: 6px;
+      height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+    }
+
+    .vendor-tag-t {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, .6);
+    }
+
+    /* TOP NAV (app screens) */
+    .app-header {
+      background: var(--navy);
+      padding: 14px 18px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .ah-back {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, .1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+    }
+
+    .ah-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .ah-sub {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, .5);
+      margin-top: 1px;
+      text-align: center;
+    }
+
+    .ah-right {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, .1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* HOME */
+    .home-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, #1B2E8A 100%);
+      padding: 14px 18px 22px;
+    }
+
+    .hero-greeting {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .5);
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .hero-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 2px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-pill {
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .75);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-pill-dot {
+      width: 5px;
+      height: 5px;
+      background: #4ade80;
+      border-radius: 50%;
+    }
+
+    .home-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px 14px 0;
+      margin-top: -14px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .hs-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 10px 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+    }
+
+    .hs-v {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--txt);
+      line-height: 1;
+    }
+
+    .hs-l {
+      font-size: 10px;
+      color: var(--txt2);
+      margin-top: 2px;
+    }
+
+    .section-header {
+      padding: 16px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sh-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--txt);
+    }
+
+    .sh-link {
+      font-size: 12px;
+      color: var(--b);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .act-card {
+      margin: 0 14px 10px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, .06);
+      overflow: hidden;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color .15s;
+    }
+
+    .act-card:active {
+      border-color: var(--navy);
+    }
+
+    .act-card-head {
+      padding: 12px 14px 8px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .act-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--txt);
+    }
+
+    .act-path {
+      font-size: 10.5px;
+      color: var(--txt3);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .act-body {
+      padding: 0 14px 12px;
+    }
+
+    .act-prog-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .act-pr {
+      flex: 1;
+      height: 6px;
+      background: #E5E7EB;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .act-pr-f {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--b);
+    }
+
+    .act-pr-pct {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--txt2);
+      width: 30px;
+      text-align: right;
+    }
+
+    .act-nums {
+      display: flex;
+      gap: 12px;
+    }
+
+    .act-num {
+      font-size: 11px;
+      color: var(--txt2);
+    }
+
+    .act-num strong {
+      color: var(--txt);
+    }
+
+    .act-foot {
+      background: #FAFBFF;
+      padding: 7px 14px;
+      border-top: 1px solid var(--bdr);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .enter-btn {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 500;
+    }
+
+    .c-g {
+      background: var(--gbg);
+      color: var(--g);
+    }
+
+    .c-y {
+      background: var(--wbg);
+      color: var(--w);
+    }
+
+    .c-b {
+      background: var(--bbg);
+      color: var(--b);
+    }
+
+    .c-r {
+      background: var(--ebg);
+      color: var(--e);
+    }
+
+    .c-x {
+      background: #F3F4F6;
+      color: var(--txt2);
+    }
+
+    .c-n {
+      background: #EEF2FF;
+      color: var(--navy);
+    }
+
+    .notice-bar {
+      margin: 0 14px 10px;
+      background: var(--wbg);
+      border: 1px solid #FDE68A;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .nb-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .nb-t {
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400E;
+    }
+
+    .nb-s {
+      font-size: 11px;
+      color: #B45309;
+      margin-top: 1px;
+    }
+
+    /* ENTRY FORM */
+    .entry-bg {
+      background: var(--bg);
+      min-height: 780px;
+    }
+
+    .entry-hero {
+      background: var(--navy);
+      padding: 14px 18px 18px;
+    }
+
+    .entry-act-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .entry-breadcrumb {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, .45);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .bc-sep {
+      opacity: .4;
+    }
+
+    .entry-meta-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .form-card {
+      background: #fff;
+      margin: 12px 14px;
+      border-radius: 14px;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, .06);
+      overflow: hidden;
+    }
+
+    .fc-head {
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    .fc-head-t {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--txt);
+    }
+
+    .fc-head-s {
+      font-size: 11px;
+      color: var(--txt3);
+      margin-top: 1px;
+    }
+
+    .fc-body {
+      padding: 14px;
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .fg:last-child {
+      margin-bottom: 0;
+    }
+
+    .fl {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--txt2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .fi {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px;
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      color: var(--txt);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .fi:focus {
+      border-color: var(--navy);
+    }
+
+    .fi-big {
+      height: 52px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 2px;
+      color: var(--navy);
+    }
+
+    .fi-unit {
+      text-align: right;
+      padding-right: 46px;
+      position: relative;
+    }
+
+    .fi-unit-label {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--txt3);
+      pointer-events: none;
+    }
+
+    .target-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .target-card {
+      flex: 1;
+      background: #F8FAFF;
+      border: 1px solid #E0E9FF;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .tc-v {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .tc-l {
+      font-size: 10px;
+      color: var(--txt3);
+      margin-top: 1px;
+    }
+
+    .quick-btns {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .qb {
+      padding: 6px 12px;
+      background: #EEF2FF;
+      border: 1.5px solid #C7D2FE;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+      cursor: pointer;
+      border: none;
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: #EEF2FF;
+      transition: background .12s;
+    }
+
+    .qb:hover {
+      background: #C7D2FE;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .photo-slot-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .add-photo-btn {
+      border: 2px dashed var(--bdr);
+      border-radius: 10px;
+      height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      background: #FAFBFF;
+      transition: background .12s;
+    }
+
+    .add-photo-btn:hover {
+      background: #EEF2FF;
+    }
+
+    .apb-icon {
+      font-size: 20px;
+      opacity: .4;
+    }
+
+    .apb-t {
+      font-size: 11px;
+      color: var(--txt3);
+      font-weight: 500;
+    }
+
+    .remarks-ta {
+      width: 100%;
+      min-height: 72px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      color: var(--txt);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    .remarks-ta:focus {
+      border-color: var(--navy);
+    }
+
+    .gps-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--gbg);
+      border: 1px solid #A7F3D0;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .gps-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--g);
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, .2);
+    }
+
+    .gps-t {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--g);
+    }
+
+    .gps-s {
+      font-size: 10.5px;
+      color: #6EE7B7;
+      margin-top: 1px;
+    }
+
+    .submit-btn {
+      width: calc(100% - 28px);
+      margin: 0 14px 16px;
+      height: 52px;
+      background: var(--red);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      transition: opacity .15s;
+      letter-spacing: .3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover {
+      opacity: .92;
+    }
+
+    .submit-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* CONFIRMATION */
+    .confirm-bg {
+      min-height: 780px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 28px 32px;
+    }
+
+    .confirm-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--gbg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .confirm-icon svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .confirm-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--txt);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .confirm-sub {
+      font-size: 13px;
+      color: var(--txt2);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .confirm-summary {
+      background: #F8FAFF;
+      border: 1px solid #E0E9FF;
+      border-radius: 14px;
+      padding: 16px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    .cs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #EEF2FF;
+      font-size: 13px;
+    }
+
+    .cs-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .cs-k {
+      color: var(--txt2);
+    }
+
+    .cs-v {
+      font-weight: 600;
+      color: var(--txt);
+    }
+
+    .confirm-btn-p {
+      width: 100%;
+      height: 50px;
+      background: var(--navy);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .confirm-btn-s {
+      width: 100%;
+      height: 44px;
+      background: transparent;
+      border: 1.5px solid var(--bdr);
+      border-radius: 14px;
+      color: var(--txt2);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      background: #fff;
+      border-top: 1px solid var(--bdr);
+      display: flex;
+      padding: 8px 0 4px;
+      position: sticky;
+      bottom: 0;
+      z-index: 50;
+    }
+
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .bn-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--txt3);
+    }
+
+    .bn-label {
+      font-size: 10px;
+      color: var(--txt3);
+      font-weight: 500;
+    }
+
+    .bn-item.active .bn-icon {
+      color: var(--navy);
+    }
+
+    .bn-item.active .bn-label {
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    /* History screen */
+    .hist-item {
+      margin: 0 14px 8px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+    }
+
+    .hi-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 3px;
+    }
+
+    .hi-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--txt);
+    }
+
+    .hi-date {
+      font-size: 11px;
+      color: var(--txt3);
+    }
+
+    .hi-meta {
+      font-size: 11.5px;
+      color: var(--txt2);
+      display: flex;
+      gap: 10px;
+    }
+
+    /* date badge */
+    .date-badge {
+      margin: 16px 14px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--txt3);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .scroll-pb {
+      height: 24px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="stage">
-  <div class="stage-label">TataPower · Field Engineer App</div>
-  <div class="device">
-    <div class="device-inner">
-      <div class="dynamic-island">
-        <div class="di-led"></div>
-        <div class="di-cam"></div>
-      </div>
-      <div id="fe-app"></div>
-    </div>
-  </div>
-</div>
-
-<script type="text/babel">
-const { useState, useRef, useEffect } = React;
-
-// ── Data ────────────────────────────────────────────────────────
-const ENGINEER = {
-  name: 'Suresh Kumar', id: 'ENG-0042',
-  vendor: 'M/s Electrocraft Solutions', vendorId: 'V-001',
-  project: 'TPSSL-RJ-001', projectName: 'Rajasthan Solar Ph.1',
-  block: 'Block 12',
-};
-
-const TODAY_ACTIVITIES = [
-  {
-    id: 'ACT-004-22', name: 'Panel Lifting & Setting',
-    path: ['DC Work', 'Module Installation', 'Module Placement'],
-    uom: 'No.', target: 480, done: 320, todayDone: 96,
-    status: 'Active', urgent: false,
-  },
-  {
-    id: 'ACT-002-22', name: 'Pile Boring',
-    path: ['DC Work', 'Piling Work', 'Pile Driving'],
-    uom: 'No.', target: 240, done: 190, todayDone: 48,
-    status: 'Active', urgent: true,
-  },
-  {
-    id: 'ACT-003-2', name: 'Structure Assembly',
-    path: ['DC Work', 'MMS Erection'],
-    uom: 'No.', target: 320, done: 180, todayDone: 32,
-    status: 'Active', urgent: false,
-  },
-  {
-    id: 'ACT-009-1', name: 'Pole Erection',
-    path: ['Civil Work', 'Fencing'],
-    uom: 'No.', target: 100, done: 60, todayDone: 20,
-    status: 'Active', urgent: false,
-  },
-];
-
-const HISTORY = [
-  {date:'28 Jun 2026', act:'Panel Lifting & Setting', qty:88, uom:'No.', id:'ACT-004-22', status:'Approved'},
-  {date:'28 Jun 2026', act:'Pile Boring',             qty:52, uom:'No.', id:'ACT-002-22', status:'Approved'},
-  {date:'27 Jun 2026', act:'Structure Assembly',      qty:40, uom:'No.', id:'ACT-003-2',  status:'Approved'},
-  {date:'27 Jun 2026', act:'Panel Lifting & Setting', qty:96, uom:'No.', id:'ACT-004-22', status:'Approved'},
-  {date:'26 Jun 2026', act:'Pole Erection',           qty:22, uom:'No.', id:'ACT-009-1',  status:'Pending'},
-  {date:'26 Jun 2026', act:'Pile Boring',             qty:44, uom:'No.', id:'ACT-002-22', status:'Approved'},
-];
-
-// ── SVG Icons ────────────────────────────────────────────────────
-const IcoHome = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12L12 3l9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>;
-const IcoList = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>;
-const IcoHist = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>;
-const IcoPerson = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 20a8 8 0 0116 0"/></svg>;
-const IcoBack = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 19l-7-7 7-7"/></svg>;
-const IcoCheck = () => <svg viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>;
-const IcoCamera = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>;
-const IcoNotify = () => <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>;
-
-// ── Status Bar ────────────────────────────────────────────────────
-const StatusBar = ({ dark }) => {
-  const now = new Date();
-  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  const col = dark ? '#fff' : '#111827';
-  return (
-    <div className="status-bar" style={{color: col, background: dark ? '#0C1D56' : '#fff'}}>
-      <div className="sb-time">{t}</div>
-      <div className="sb-icons">
-        <svg width="16" height="10" viewBox="0 0 16 10" fill={col}><rect x="0" y="3" width="3" height="7" rx="1"/><rect x="4" y="2" width="3" height="8" rx="1"/><rect x="8" y="1" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="10" rx="1"/></svg>
-        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke={col} strokeWidth="1.2"><path d="M1 4a8 8 0 0112 0M3.5 6.5a5 5 0 017 0M6 9a2 2 0 012 0"/></svg>
-        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0" y="1" width="22" height="10" rx="3" stroke={col} strokeWidth="1.2"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill={col}/><rect x="23" y="3.5" width="2" height="5" rx="1" fill={col} opacity=".4"/></svg>
+  <div class="stage">
+    <div class="stage-label">TataPower · Field Engineer App</div>
+    <div class="device">
+      <div class="device-inner">
+        <div class="dynamic-island">
+          <div class="di-led"></div>
+          <div class="di-cam"></div>
+        </div>
+        <div id="fe-app"></div>
       </div>
     </div>
-  );
-};
-
-// ── Bottom Nav ─────────────────────────────────────────────────────
-const BottomNav = ({ active, onNav }) => (
-  <div className="bottom-nav">
-    {[
-      { id: 'home',   label: 'Home',    Icon: IcoHome   },
-      { id: 'tasks',  label: 'Tasks',   Icon: IcoList   },
-      { id: 'history',label: 'History', Icon: IcoHist   },
-      { id: 'profile',label: 'Profile', Icon: IcoPerson },
-    ].map(({ id, label, Icon }) => (
-      <div key={id} className={`bn-item ${active === id ? 'active' : ''}`} onClick={() => onNav(id)}>
-        <div className="bn-icon"><Icon /></div>
-        <div className="bn-label">{label}</div>
-      </div>
-    ))}
   </div>
-);
 
-// ── LOGIN SCREEN ───────────────────────────────────────────────────
-const LoginScreen = ({ onLogin }) => {
-  const [role, setRole] = useState('field');
-  const [pin, setPin] = useState('');
-  const handlePin = d => { if (pin.length < 4) setPin(p => p + d); };
-  const doLogin = () => { if (pin.length >= 4) onLogin(); };
-  return (
-    <div>
-      <StatusBar dark />
-      <div className="login-bg">
-        <div className="login-logo" dangerouslySetInnerHTML={{__html: `<svg width="100%" height="100%" viewBox="0 0 169 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    // ── Data ────────────────────────────────────────────────────────
+    const ENGINEER = {
+      name: 'Suresh Kumar', id: 'ENG-0042',
+      vendor: 'M/s Electrocraft Solutions', vendorId: 'V-001',
+      project: 'TPSSL-RJ-001', projectName: 'Rajasthan Solar Ph.1',
+      block: 'Block 12',
+    };
+
+    const TODAY_ACTIVITIES = [
+      {
+        id: 'ACT-004-22', name: 'Panel Lifting & Setting',
+        path: ['DC Work', 'Module Installation', 'Module Placement'],
+        uom: 'No.', target: 480, done: 320, todayDone: 96,
+        status: 'Active', urgent: false,
+      },
+      {
+        id: 'ACT-002-22', name: 'Pile Boring',
+        path: ['DC Work', 'Piling Work', 'Pile Driving'],
+        uom: 'No.', target: 240, done: 190, todayDone: 48,
+        status: 'Active', urgent: true,
+      },
+      {
+        id: 'ACT-003-2', name: 'Structure Assembly',
+        path: ['DC Work', 'MMS Erection'],
+        uom: 'No.', target: 320, done: 180, todayDone: 32,
+        status: 'Active', urgent: false,
+      },
+      {
+        id: 'ACT-009-1', name: 'Pole Erection',
+        path: ['Civil Work', 'Fencing'],
+        uom: 'No.', target: 100, done: 60, todayDone: 20,
+        status: 'Active', urgent: false,
+      },
+    ];
+
+    const HISTORY = [
+      { date: '28 Jun 2026', act: 'Panel Lifting & Setting', qty: 88, uom: 'No.', id: 'ACT-004-22', status: 'Approved' },
+      { date: '28 Jun 2026', act: 'Pile Boring', qty: 52, uom: 'No.', id: 'ACT-002-22', status: 'Approved' },
+      { date: '27 Jun 2026', act: 'Structure Assembly', qty: 40, uom: 'No.', id: 'ACT-003-2', status: 'Approved' },
+      { date: '27 Jun 2026', act: 'Panel Lifting & Setting', qty: 96, uom: 'No.', id: 'ACT-004-22', status: 'Approved' },
+      { date: '26 Jun 2026', act: 'Pole Erection', qty: 22, uom: 'No.', id: 'ACT-009-1', status: 'Pending' },
+      { date: '26 Jun 2026', act: 'Pile Boring', qty: 44, uom: 'No.', id: 'ACT-002-22', status: 'Approved' },
+    ];
+
+    // ── SVG Icons ────────────────────────────────────────────────────
+    const IcoHome = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12L12 3l9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" /></svg>;
+    const IcoList = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>;
+    const IcoHist = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></svg>;
+    const IcoPerson = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="7" r="4" /><path d="M4 20a8 8 0 0116 0" /></svg>;
+    const IcoBack = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 19l-7-7 7-7" /></svg>;
+    const IcoCheck = () => <svg viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>;
+    const IcoCamera = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" /><circle cx="12" cy="13" r="4" /></svg>;
+    const IcoNotify = () => <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>;
+
+    // ── Status Bar ────────────────────────────────────────────────────
+    const StatusBar = ({ dark }) => {
+      const now = new Date();
+      const t = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      const col = dark ? '#fff' : '#111827';
+      return (
+        <div className="status-bar" style={{ color: col, background: dark ? '#0C1D56' : '#fff' }}>
+          <div className="sb-time">{t}</div>
+          <div className="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10" fill={col}><rect x="0" y="3" width="3" height="7" rx="1" /><rect x="4" y="2" width="3" height="8" rx="1" /><rect x="8" y="1" width="3" height="9" rx="1" /><rect x="12" y="0" width="3" height="10" rx="1" /></svg>
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke={col} strokeWidth="1.2"><path d="M1 4a8 8 0 0112 0M3.5 6.5a5 5 0 017 0M6 9a2 2 0 012 0" /></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0" y="1" width="22" height="10" rx="3" stroke={col} strokeWidth="1.2" /><rect x="1.5" y="2.5" width="17" height="7" rx="1.5" fill={col} /><rect x="23" y="3.5" width="2" height="5" rx="1" fill={col} opacity=".4" /></svg>
+          </div>
+        </div>
+      );
+    };
+
+    // ── Bottom Nav ─────────────────────────────────────────────────────
+    const BottomNav = ({ active, onNav }) => (
+      <div className="bottom-nav">
+        {[
+          { id: 'home', label: 'Home', Icon: IcoHome },
+          { id: 'tasks', label: 'Tasks', Icon: IcoList },
+          { id: 'history', label: 'History', Icon: IcoHist },
+          { id: 'profile', label: 'Profile', Icon: IcoPerson },
+        ].map(({ id, label, Icon }) => (
+          <div key={id} className={`bn-item ${active === id ? 'active' : ''}`} onClick={() => onNav(id)}>
+            <div className="bn-icon"><Icon /></div>
+            <div className="bn-label">{label}</div>
+          </div>
+        ))}
+      </div>
+    );
+
+    // ── LOGIN SCREEN ───────────────────────────────────────────────────
+    const LoginScreen = ({ onLogin }) => {
+      const [role, setRole] = useState('field');
+      const [pin, setPin] = useState('');
+      const handlePin = d => { if (pin.length < 4) setPin(p => p + d); };
+      const doLogin = () => { if (pin.length >= 4) onLogin(); };
+      return (
+        <div>
+          <StatusBar dark />
+          <div className="login-bg">
+            <div className="login-logo" dangerouslySetInnerHTML={{
+              __html: `<svg width="100%" height="100%" viewBox="0 0 169 104" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M44.8071 47.1169H63.921V52.6815H58.3771V65.8998H50.4337V52.6815H44.8071V47.1169Z" fill="white"/>
 <path d="M73.5396 54.7501L69.5265 65.8998H61.9141L69.361 47.1169H77.6354L85.3513 65.8998H77.6354L73.5396 54.7501Z" fill="white"/>
 <path d="M83.488 47.1169H102.602V52.6815H97.1408V65.8998H89.1974V52.6815H83.488V47.1169Z" fill="white"/>
@@ -476,519 +1334,529 @@ const LoginScreen = ({ onLogin }) => {
 <path d="M67.287 92.3018L63.2946 103.431H55.6821L63.1291 84.6893H71.3828L79.078 103.431H71.3828L67.287 92.3018Z" fill="white"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M157.858 92.632H160.216C161.664 92.632 162.574 92.5699 162.967 92.4665C163.361 92.3424 163.671 92.1149 163.919 91.7425C164.167 91.3702 164.291 90.8944 164.291 90.2945C164.291 89.7153 164.167 89.2602 163.919 88.9085C163.671 88.5569 163.34 88.3086 162.926 88.1845C162.637 88.1018 161.768 88.0604 160.34 88.0604H157.858V92.632ZM154.672 103.099V84.9575H161.375C163.092 84.9575 164.312 85.123 165.057 85.454C165.781 85.7849 166.401 86.3435 166.856 87.1502C167.332 87.957 167.56 88.9292 167.56 90.0463C167.56 91.4736 167.208 92.6113 166.484 93.4801C165.76 94.349 164.746 94.8868 163.402 95.1143C164.085 95.5694 164.643 96.0866 165.098 96.6244C165.553 97.1829 166.153 98.1552 166.919 99.5825L168.822 103.12H165.036L162.719 99.1688C161.892 97.7415 161.333 96.852 161.023 96.5003C160.733 96.1486 160.402 95.9004 160.071 95.7556C159.74 95.6315 159.203 95.5487 158.479 95.5487H157.858V103.12H154.672V103.099ZM140.006 103.099V84.9575H151.694V88.019H143.171V92.0321H151.094V95.073H143.171V100.017H151.983V103.078H140.006V103.099ZM121.43 103.099L117.665 84.9575H120.934L123.292 97.4105L126.167 84.9575H129.953L132.725 97.6173L135.145 84.9575H138.351L134.524 103.099H131.132L127.987 89.5498L124.864 103.099H121.43ZM104.716 94.018C104.716 96.1073 105.129 97.6587 105.978 98.7137C106.826 99.7687 107.86 100.286 109.101 100.286C110.342 100.286 111.377 99.7687 112.204 98.7344C113.031 97.7001 113.425 96.1073 113.425 93.9766C113.425 91.8666 113.031 90.3152 112.225 89.3016C111.418 88.288 110.384 87.7915 109.08 87.7915C107.798 87.7915 106.722 88.3086 105.916 89.3223C105.129 90.3152 104.716 91.8873 104.716 94.018ZM101.447 94.1421C101.447 91.9701 101.778 90.2118 102.461 88.8051C103.144 87.3985 104.033 86.3642 105.109 85.6815C106.205 84.9989 107.529 84.6472 109.08 84.6472C111.335 84.6472 113.176 85.454 114.604 87.0882C116.031 88.7224 116.734 91.0185 116.734 94.0387C116.734 97.0795 115.99 99.4377 114.48 101.155C113.156 102.665 111.377 103.43 109.101 103.43C106.826 103.43 105.026 102.685 103.702 101.196C102.192 99.4584 101.447 97.1209 101.447 94.1421ZM90.5665 88.019V93.1698H92.3248C93.5039 93.1698 94.3107 93.0871 94.7244 92.9423C95.1381 92.7975 95.4898 92.5079 95.7587 92.0942C96.0276 91.6805 96.1724 91.184 96.1724 90.5841C96.1724 89.9842 96.0276 89.4671 95.7587 89.074C95.4691 88.6603 95.1381 88.3914 94.7244 88.2466C94.3107 88.1018 93.4419 88.0397 92.118 88.0397H90.5665V88.019ZM87.3809 103.099V84.9575H92.4903C94.3934 84.9575 95.6346 85.0402 96.2345 85.2264C97.1653 85.4953 97.9307 86.0952 98.5513 87.0261C99.1512 87.9363 99.4615 89.1154 99.4615 90.5634C99.4615 91.8666 99.1926 92.9837 98.6754 93.8525C98.1583 94.742 97.4963 95.3626 96.7102 95.7142C95.9242 96.0659 94.5796 96.2521 92.6558 96.2521H90.5665V103.099H87.3809Z" fill="white"/>
 </svg>`}}></div>
-        <div className="login-app-n">TataPower FFA</div>
-        <div className="login-sub">FIELD FORCE APPLICATION · v2.4</div>
+            <div className="login-sub">FIELD FORCE APPLICATION</div>
 
-        <div className="login-card">
-          <div className="login-role">
-            {[['field','Field Engineer'],['supervisor','Supervisor']].map(([v,l]) => (
-              <button key={v} className={`role-btn ${role===v?'active':''}`} onClick={() => setRole(v)}>{l}</button>
+            <div className="login-card">
+              <div className="login-role">
+                {[['field', 'Field Engineer'], ['supervisor', 'Supervisor']].map(([v, l]) => (
+                  <button key={v} className={`role-btn ${role === v ? 'active' : ''}`} onClick={() => setRole(v)}>{l}</button>
+                ))}
+              </div>
+
+              <div className="fg">
+                <div className="lf">Vendor Employee ID</div>
+                <input className="lfc" defaultValue="ENG-0042" placeholder="e.g. ENG-0042" />
+              </div>
+              <div className="fg">
+                <div className="lf">PIN</div>
+                <div className="pin-row">
+                  {[0, 1, 2, 3].map(i => (
+                    <div key={i} className="pin-dot">{pin.length > i ? '●' : ''}</div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px', marginTop: 4 }}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((d, i) => (
+                    <button key={i} onClick={() => d === '⌫' ? setPin(p => p.slice(0, -1)) : d !== '' && handlePin(d)}
+                      style={{
+                        height: 42, background: 'rgba(255,255,255,.09)', border: '1.5px solid rgba(255,255,255,.12)',
+                        borderRadius: 10, color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+                        fontFamily: 'IBM Plex Sans, sans-serif', opacity: d === '' ? 0 : 1
+                      }}>
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button className="login-btn" onClick={doLogin}>
+                {pin.length < 4 ? 'Enter PIN to Continue' : 'Sign In →'}
+              </button>
+            </div>
+
+            <div className="login-vendor-badge">
+              <div className="vendor-tag">
+                <div className="vendor-dot"></div>
+                <div className="vendor-tag-t">M/s Electrocraft Solutions · TPSSL-RJ-001</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ── HOME SCREEN ────────────────────────────────────────────────────
+    const HomeScreen = ({ onSelectActivity, onNav, activeNav }) => {
+      const total = TODAY_ACTIVITIES.reduce((s, a) => s + a.todayDone, 0);
+      const pct = a => Math.round((a.done / a.target) * 100);
+      return (
+        <div style={{ background: 'var(--bg)', minHeight: 780 }}>
+          <StatusBar dark />
+          <div className="home-hero">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div className="hero-greeting">GOOD MORNING</div>
+                <div className="hero-name">Suresh Kumar</div>
+              </div>
+              <button className="ah-right" style={{ background: 'rgba(255,255,255,.12)' }} onClick={() => { }}>
+                <IcoNotify />
+              </button>
+            </div>
+            <div className="hero-meta">
+              <div className="hero-pill"><div className="hero-pill-dot"></div>TPSSL-RJ-001</div>
+              <div className="hero-pill">Block 12</div>
+              <div className="hero-pill">29 Jun 2026</div>
+            </div>
+          </div>
+
+          <div className="home-stats">
+            {[
+              { v: TODAY_ACTIVITIES.length, l: 'Assigned', col: '#0C1D56' },
+              { v: total, l: 'Today Qty', col: '#059669' },
+              { v: TODAY_ACTIVITIES.filter(a => a.urgent).length, l: 'Urgent', col: '#D42027' },
+            ].map((s, i) => (
+              <div key={i} className="hs-card">
+                <div className="hs-v" style={{ color: s.col }}>{s.v}</div>
+                <div className="hs-l">{s.l}</div>
+              </div>
             ))}
           </div>
 
-          <div className="fg">
-            <div className="lf">Vendor Employee ID</div>
-            <input className="lfc" defaultValue="ENG-0042" placeholder="e.g. ENG-0042" />
-          </div>
-          <div className="fg">
-            <div className="lf">PIN</div>
-            <div className="pin-row">
-              {[0,1,2,3].map(i => (
-                <div key={i} className="pin-dot">{pin.length > i ? '●' : ''}</div>
-              ))}
+          {TODAY_ACTIVITIES.some(a => a.urgent) && (
+            <div className="notice-bar" style={{ margin: '12px 14px 0' }}>
+              <div className="nb-icon">⚠️</div>
+              <div>
+                <div className="nb-t">Pile Boring behind schedule</div>
+                <div className="nb-s">Block 12 · Target 50/day · Log progress now</div>
+              </div>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'6px',marginTop:4}}>
-              {[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map((d,i) => (
-                <button key={i} onClick={() => d==='⌫' ? setPin(p=>p.slice(0,-1)) : d!=='' && handlePin(d)}
-                  style={{height:42,background:'rgba(255,255,255,.09)',border:'1.5px solid rgba(255,255,255,.12)',
-                    borderRadius:10,color:'#fff',fontSize:16,fontWeight:600,cursor:'pointer',
-                    fontFamily:'IBM Plex Sans, sans-serif', opacity: d==='' ? 0 : 1}}>
-                  {d}
+          )}
+
+          <div className="section-header" style={{ marginTop: 12 }}>
+            <div className="sh-title">Today's Activities</div>
+            <div className="sh-link">See all →</div>
+          </div>
+
+          {TODAY_ACTIVITIES.map((a, i) => (
+            <div key={i} className="act-card" onClick={() => onSelectActivity(a)}>
+              <div className="act-card-head">
+                <div>
+                  <div className="act-name">{a.name}</div>
+                  <div className="act-path">
+                    {a.path.map((p, j) => (
+                      <span key={j}>{j > 0 ? ' › ' : ''}{p}</span>
+                    ))}
+                  </div>
+                </div>
+                <span className={`chip ${a.urgent ? 'c-r' : 'c-b'}`}>{a.urgent ? 'Urgent' : 'Active'}</span>
+              </div>
+              <div className="act-body">
+                <div className="act-prog-row">
+                  <div className="act-pr"><div className="act-pr-f" style={{ width: pct(a) + '%', background: a.urgent ? 'var(--e)' : 'var(--b)' }}></div></div>
+                  <div className="act-pr-pct">{pct(a)}%</div>
+                </div>
+                <div className="act-nums">
+                  <div className="act-num"><strong>{a.done}</strong> done</div>
+                  <div className="act-num"><strong>{a.target}</strong> total</div>
+                  <div className="act-num"><strong>{a.todayDone}</strong> today</div>
+                  <div className="act-num" style={{ color: 'var(--txt3)' }}>{a.uom}</div>
+                </div>
+              </div>
+              <div className="act-foot">
+                <div style={{ fontSize: 11, color: 'var(--txt3)' }}>
+                  <span className="chip c-n" style={{ marginRight: 4, fontSize: 10 }}>{a.id}</span>
+                </div>
+                <button className="enter-btn" onClick={e => { e.stopPropagation(); onSelectActivity(a); }}>
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="white"><path d="M8 2v9M4 7l4 4 4-4" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>
+                  Log Progress
                 </button>
-              ))}
+              </div>
+            </div>
+          ))}
+
+          <div className="scroll-pb" />
+          <BottomNav active={activeNav} onNav={onNav} />
+        </div>
+      );
+    };
+
+    // ── ENTRY FORM ─────────────────────────────────────────────────────
+    const EntryForm = ({ activity, onBack, onSubmit }) => {
+      const [qty, setQty] = useState('');
+      const [remarks, setRemarks] = useState('');
+      const remaining = activity.target - activity.done;
+      const suggestions = [
+        Math.min(remaining, Math.round(activity.target * 0.05)),
+        Math.min(remaining, Math.round(activity.target * 0.1)),
+        Math.min(remaining, Math.round(activity.target * 0.15)),
+      ].filter((v, i, a) => v > 0 && a.indexOf(v) === i);
+
+      return (
+        <div className="entry-bg">
+          <StatusBar dark />
+          <div className="entry-hero">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button className="ah-back" onClick={onBack}><IcoBack /></button>
+              <div>
+                <div className="entry-act-title">{activity.name}</div>
+                <div className="entry-breadcrumb">
+                  {activity.path.map((p, i) => (
+                    <span key={i}>{i > 0 && <span className="bc-sep"> › </span>}{p}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="entry-meta-row">
+              <span className="hero-pill">{ENGINEER.project}</span>
+              <span className="hero-pill">{ENGINEER.block}</span>
+              <span className="hero-pill chip c-n" style={{ background: 'rgba(255,255,255,.1)', color: 'rgba(255,255,255,.7)', borderRadius: 20, border: '1px solid rgba(255,255,255,.15)' }}>{activity.id}</span>
             </div>
           </div>
 
-          <button className="login-btn" onClick={doLogin}>
-            {pin.length < 4 ? 'Enter PIN to Continue' : 'Sign In →'}
-          </button>
-        </div>
-
-        <div className="login-vendor-badge">
-          <div className="vendor-tag">
-            <div className="vendor-dot"></div>
-            <div className="vendor-tag-t">M/s Electrocraft Solutions · TPSSL-RJ-001</div>
+          {/* Scope summary */}
+          <div className="form-card">
+            <div className="fc-head">
+              <div className="fc-head-t">Scope Summary</div>
+              <div className="fc-head-s">Block 12 · As of today</div>
+            </div>
+            <div className="fc-body" style={{ paddingBottom: 0 }}>
+              <div className="target-row">
+                <div className="target-card">
+                  <div className="tc-v">{activity.target.toLocaleString()}</div>
+                  <div className="tc-l">Total Scope ({activity.uom})</div>
+                </div>
+                <div className="target-card">
+                  <div className="tc-v" style={{ color: 'var(--g)' }}>{activity.done.toLocaleString()}</div>
+                  <div className="tc-l">Completed so far</div>
+                </div>
+                <div className="target-card" style={{ borderColor: '#FDE68A', background: '#FFFBEB' }}>
+                  <div className="tc-v" style={{ color: 'var(--w)' }}>{remaining.toLocaleString()}</div>
+                  <div className="tc-l">Remaining</div>
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 11, color: 'var(--txt2)' }}>
+                  <span>Overall progress</span>
+                  <span style={{ fontWeight: 600, color: 'var(--navy)' }}>{Math.round(activity.done / activity.target * 100)}%</span>
+                </div>
+                <div style={{ height: 8, background: '#E5E7EB', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: Math.round(activity.done / activity.target * 100) + '%', background: 'var(--b)', borderRadius: 4 }}></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-// ── HOME SCREEN ────────────────────────────────────────────────────
-const HomeScreen = ({ onSelectActivity, onNav, activeNav }) => {
-  const total = TODAY_ACTIVITIES.reduce((s,a)=>s+a.todayDone,0);
-  const pct = a => Math.round((a.done / a.target) * 100);
-  return (
-    <div style={{background:'var(--bg)', minHeight:780}}>
-      <StatusBar dark />
-      <div className="home-hero">
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div>
-            <div className="hero-greeting">GOOD MORNING</div>
-            <div className="hero-name">Suresh Kumar</div>
+          {/* Quantity entry */}
+          <div className="form-card">
+            <div className="fc-head">
+              <div className="fc-head-t">Today's Progress Entry</div>
+              <div className="fc-head-s">29 Jun 2026 · Enter quantity completed today</div>
+            </div>
+            <div className="fc-body">
+              <div className="fg">
+                <div className="fl">Quantity Completed ({activity.uom})</div>
+                <div style={{ position: 'relative' }}>
+                  <input type="number" className="fi fi-big" placeholder="0"
+                    value={qty} onChange={e => setQty(e.target.value)} />
+                  <span className="fi-unit-label" style={{ top: '50%', transform: 'translateY(-50%)', right: 14, fontSize: 14, fontWeight: 700, color: 'var(--txt3)' }}>{activity.uom}</span>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--txt3)', marginBottom: 10, marginTop: -6 }}>Quick fill:</div>
+              <div className="quick-btns">
+                {suggestions.map((s, i) => (
+                  <button key={i} className="qb" onClick={() => setQty(String(s))}>+{s}</button>
+                ))}
+                <button className="qb" onClick={() => setQty(String(remaining))} style={{ background: '#ECFDF5', color: 'var(--g)' }}>Full remaining</button>
+              </div>
+
+              {/* GPS */}
+              <div className="gps-row">
+                <div className="gps-dot"></div>
+                <div>
+                  <div className="gps-t">GPS Location Captured</div>
+                  <div className="gps-s">26.2389° N, 73.0243° E · Block 12, Row 8</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <button className="ah-right" style={{background:'rgba(255,255,255,.12)'}} onClick={() => {}}>
-            <IcoNotify />
-          </button>
-        </div>
-        <div className="hero-meta">
-          <div className="hero-pill"><div className="hero-pill-dot"></div>TPSSL-RJ-001</div>
-          <div className="hero-pill">Block 12</div>
-          <div className="hero-pill">29 Jun 2026</div>
-        </div>
-      </div>
 
-      <div className="home-stats">
-        {[
-          {v: TODAY_ACTIVITIES.length, l: 'Assigned', col: '#0C1D56'},
-          {v: total, l: 'Today Qty', col: '#059669'},
-          {v: TODAY_ACTIVITIES.filter(a=>a.urgent).length, l: 'Urgent', col: '#D42027'},
-        ].map((s,i) => (
-          <div key={i} className="hs-card">
-            <div className="hs-v" style={{color:s.col}}>{s.v}</div>
-            <div className="hs-l">{s.l}</div>
+          {/* Photo evidence */}
+          <div className="form-card">
+            <div className="fc-head">
+              <div className="fc-head-t">Photo Evidence</div>
+              <div className="fc-head-s">Attach site photos (min 1 required)</div>
+            </div>
+            <div className="fc-body">
+              <div className="photo-grid">
+                <div className="photo-slot-wrap">
+                  <image-slot id="site-photo-1" shape="rounded" radius="10"
+                    placeholder="📷 Before photo"
+                    style={{ width: '100%', height: '90px', display: 'block' }}></image-slot>
+                </div>
+                <div className="photo-slot-wrap">
+                  <image-slot id="site-photo-2" shape="rounded" radius="10"
+                    placeholder="📷 After photo"
+                    style={{ width: '100%', height: '90px', display: 'block' }}></image-slot>
+                </div>
+                <div className="photo-slot-wrap">
+                  <image-slot id="site-photo-3" shape="rounded" radius="10"
+                    placeholder="📷 QC check"
+                    style={{ width: '100%', height: '90px', display: 'block' }}></image-slot>
+                </div>
+                <div className="add-photo-btn" onClick={() => { }}>
+                  <div className="apb-icon">＋</div>
+                  <div className="apb-t">Add more</div>
+                </div>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
 
-      {TODAY_ACTIVITIES.some(a=>a.urgent) && (
-        <div className="notice-bar" style={{margin:'12px 14px 0'}}>
-          <div className="nb-icon">⚠️</div>
-          <div>
-            <div className="nb-t">Pile Boring behind schedule</div>
-            <div className="nb-s">Block 12 · Target 50/day · Log progress now</div>
-          </div>
-        </div>
-      )}
-
-      <div className="section-header" style={{marginTop:12}}>
-        <div className="sh-title">Today's Activities</div>
-        <div className="sh-link">See all →</div>
-      </div>
-
-      {TODAY_ACTIVITIES.map((a,i) => (
-        <div key={i} className="act-card" onClick={() => onSelectActivity(a)}>
-          <div className="act-card-head">
-            <div>
-              <div className="act-name">{a.name}</div>
-              <div className="act-path">
-                {a.path.map((p,j) => (
-                  <span key={j}>{j>0?' › ':''}{p}</span>
+          {/* Remarks */}
+          <div className="form-card">
+            <div className="fc-head">
+              <div className="fc-head-t">Remarks / Issues</div>
+              <div className="fc-head-s">Optional — note any delays or quality issues</div>
+            </div>
+            <div className="fc-body">
+              <textarea className="remarks-ta" placeholder="e.g. Panel alignment delayed due to wind. QC passed for rows 1-8."
+                value={remarks} onChange={e => setRemarks(e.target.value)}></textarea>
+              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                {['No issues', 'Material delay', 'QC failed', 'Weather delay', 'Equipment issue'].map(t => (
+                  <button key={t} onClick={() => setRemarks(t)}
+                    style={{
+                      padding: '4px 10px', background: '#F3F4F6', border: '1.5px solid var(--bdr)',
+                      borderRadius: 8, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                      color: 'var(--txt2)', transition: 'background .1s'
+                    }}>{t}
+                  </button>
                 ))}
               </div>
             </div>
-            <span className={`chip ${a.urgent?'c-r':'c-b'}`}>{a.urgent?'Urgent':'Active'}</span>
           </div>
-          <div className="act-body">
-            <div className="act-prog-row">
-              <div className="act-pr"><div className="act-pr-f" style={{width:pct(a)+'%',background:a.urgent?'var(--e)':'var(--b)'}}></div></div>
-              <div className="act-pr-pct">{pct(a)}%</div>
-            </div>
-            <div className="act-nums">
-              <div className="act-num"><strong>{a.done}</strong> done</div>
-              <div className="act-num"><strong>{a.target}</strong> total</div>
-              <div className="act-num"><strong>{a.todayDone}</strong> today</div>
-              <div className="act-num" style={{color:'var(--txt3)'}}>{a.uom}</div>
-            </div>
-          </div>
-          <div className="act-foot">
-            <div style={{fontSize:11,color:'var(--txt3)'}}>
-              <span className="chip c-n" style={{marginRight:4,fontSize:10}}>{a.id}</span>
-            </div>
-            <button className="enter-btn" onClick={e=>{e.stopPropagation();onSelectActivity(a);}}>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="white"><path d="M8 2v9M4 7l4 4 4-4" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
-              Log Progress
-            </button>
-          </div>
-        </div>
-      ))}
 
-      <div className="scroll-pb" />
-      <BottomNav active={activeNav} onNav={onNav} />
-    </div>
-  );
-};
+          <div className="scroll-pb" />
 
-// ── ENTRY FORM ─────────────────────────────────────────────────────
-const EntryForm = ({ activity, onBack, onSubmit }) => {
-  const [qty, setQty] = useState('');
-  const [remarks, setRemarks] = useState('');
-  const remaining = activity.target - activity.done;
-  const suggestions = [
-    Math.min(remaining, Math.round(activity.target * 0.05)),
-    Math.min(remaining, Math.round(activity.target * 0.1)),
-    Math.min(remaining, Math.round(activity.target * 0.15)),
-  ].filter((v,i,a) => v > 0 && a.indexOf(v) === i);
+          <button className="submit-btn" disabled={!qty || Number(qty) <= 0} onClick={() => onSubmit({ qty, remarks, activity })}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>
+            Submit Progress Entry
+          </button>
+        </div>
+      );
+    };
 
-  return (
-    <div className="entry-bg">
-      <StatusBar dark />
-      <div className="entry-hero">
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <button className="ah-back" onClick={onBack}><IcoBack /></button>
-          <div>
-            <div className="entry-act-title">{activity.name}</div>
-            <div className="entry-breadcrumb">
-              {activity.path.map((p,i) => (
-                <span key={i}>{i>0&&<span className="bc-sep"> › </span>}{p}</span>
-              ))}
+    // ── CONFIRMATION ───────────────────────────────────────────────────
+    const ConfirmScreen = ({ submission, onHome }) => (
+      <div className="confirm-bg">
+        <StatusBar />
+        <div style={{ height: 40 }} />
+        <div className="confirm-icon"><IcoCheck /></div>
+        <div className="confirm-title">Progress Submitted!</div>
+        <div className="confirm-sub">
+          Your entry has been logged and sent to the project supervisor for review.
+        </div>
+
+        <div className="confirm-summary">
+          {[
+            ['Activity', submission.activity.name],
+            ['Activity ID', submission.activity.id],
+            ['Project', ENGINEER.project],
+            ['Block', ENGINEER.block],
+            ['Quantity', `${submission.qty} ${submission.activity.uom}`],
+            ['Date', '29 Jun 2026'],
+            ['Submitted by', ENGINEER.name],
+            ['Vendor', 'M/s Electrocraft'],
+            ['Status', '⏳ Pending Review'],
+          ].map(([k, v]) => (
+            <div key={k} className="cs-row">
+              <span className="cs-k">{k}</span>
+              <span className="cs-v">{v}</span>
             </div>
-          </div>
+          ))}
         </div>
-        <div className="entry-meta-row">
-          <span className="hero-pill">{ENGINEER.project}</span>
-          <span className="hero-pill">{ENGINEER.block}</span>
-          <span className="hero-pill chip c-n" style={{background:'rgba(255,255,255,.1)',color:'rgba(255,255,255,.7)',borderRadius:20,border:'1px solid rgba(255,255,255,.15)'}}>{activity.id}</span>
-        </div>
+
+        <button className="confirm-btn-p" onClick={onHome}>Log Another Activity</button>
+        <button className="confirm-btn-s" onClick={onHome}>Back to Home</button>
       </div>
+    );
 
-      {/* Scope summary */}
-      <div className="form-card">
-        <div className="fc-head">
-          <div className="fc-head-t">Scope Summary</div>
-          <div className="fc-head-s">Block 12 · As of today</div>
-        </div>
-        <div className="fc-body" style={{paddingBottom:0}}>
-          <div className="target-row">
-            <div className="target-card">
-              <div className="tc-v">{activity.target.toLocaleString()}</div>
-              <div className="tc-l">Total Scope ({activity.uom})</div>
+    // ── HISTORY SCREEN ──────────────────────────────────────────────────
+    const HistoryScreen = ({ onNav, activeNav }) => {
+      const grouped = {};
+      HISTORY.forEach(h => { if (!grouped[h.date]) grouped[h.date] = []; grouped[h.date].push(h); });
+      return (
+        <div style={{ background: 'var(--bg)', minHeight: 780 }}>
+          <StatusBar dark />
+          <div className="app-header">
+            <div style={{ width: 32 }}></div>
+            <div style={{ textAlign: 'center' }}>
+              <div className="ah-title">My Submissions</div>
+              <div className="ah-sub">All progress entries</div>
             </div>
-            <div className="target-card">
-              <div className="tc-v" style={{color:'var(--g)'}}>{activity.done.toLocaleString()}</div>
-              <div className="tc-l">Completed so far</div>
-            </div>
-            <div className="target-card" style={{borderColor:'#FDE68A',background:'#FFFBEB'}}>
-              <div className="tc-v" style={{color:'var(--w)'}}>{remaining.toLocaleString()}</div>
-              <div className="tc-l">Remaining</div>
+            <div className="ah-right">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.5"><circle cx="7" cy="7" r="4" /><path d="M11 11l3 3" strokeLinecap="round" /></svg>
             </div>
           </div>
-          {/* Progress bar */}
-          <div style={{marginBottom:14}}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,fontSize:11,color:'var(--txt2)'}}>
-              <span>Overall progress</span>
-              <span style={{fontWeight:600,color:'var(--navy)'}}>{Math.round(activity.done/activity.target*100)}%</span>
-            </div>
-            <div style={{height:8,background:'#E5E7EB',borderRadius:4,overflow:'hidden'}}>
-              <div style={{height:'100%',width:Math.round(activity.done/activity.target*100)+'%',background:'var(--b)',borderRadius:4}}></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quantity entry */}
-      <div className="form-card">
-        <div className="fc-head">
-          <div className="fc-head-t">Today's Progress Entry</div>
-          <div className="fc-head-s">29 Jun 2026 · Enter quantity completed today</div>
-        </div>
-        <div className="fc-body">
-          <div className="fg">
-            <div className="fl">Quantity Completed ({activity.uom})</div>
-            <div style={{position:'relative'}}>
-              <input type="number" className="fi fi-big" placeholder="0"
-                value={qty} onChange={e => setQty(e.target.value)} />
-              <span className="fi-unit-label" style={{top:'50%',transform:'translateY(-50%)',right:14,fontSize:14,fontWeight:700,color:'var(--txt3)'}}>{activity.uom}</span>
-            </div>
-          </div>
-          <div style={{fontSize:11,color:'var(--txt3)',marginBottom:10,marginTop:-6}}>Quick fill:</div>
-          <div className="quick-btns">
-            {suggestions.map((s,i) => (
-              <button key={i} className="qb" onClick={() => setQty(String(s))}>+{s}</button>
-            ))}
-            <button className="qb" onClick={() => setQty(String(remaining))} style={{background:'#ECFDF5',color:'var(--g)'}}>Full remaining</button>
-          </div>
-
-          {/* GPS */}
-          <div className="gps-row">
-            <div className="gps-dot"></div>
-            <div>
-              <div className="gps-t">GPS Location Captured</div>
-              <div className="gps-s">26.2389° N, 73.0243° E · Block 12, Row 8</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Photo evidence */}
-      <div className="form-card">
-        <div className="fc-head">
-          <div className="fc-head-t">Photo Evidence</div>
-          <div className="fc-head-s">Attach site photos (min 1 required)</div>
-        </div>
-        <div className="fc-body">
-          <div className="photo-grid">
-            <div className="photo-slot-wrap">
-              <image-slot id="site-photo-1" shape="rounded" radius="10"
-                placeholder="📷 Before photo"
-                style={{width:'100%',height:'90px',display:'block'}}></image-slot>
-            </div>
-            <div className="photo-slot-wrap">
-              <image-slot id="site-photo-2" shape="rounded" radius="10"
-                placeholder="📷 After photo"
-                style={{width:'100%',height:'90px',display:'block'}}></image-slot>
-            </div>
-            <div className="photo-slot-wrap">
-              <image-slot id="site-photo-3" shape="rounded" radius="10"
-                placeholder="📷 QC check"
-                style={{width:'100%',height:'90px',display:'block'}}></image-slot>
-            </div>
-            <div className="add-photo-btn" onClick={() => {}}>
-              <div className="apb-icon">＋</div>
-              <div className="apb-t">Add more</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Remarks */}
-      <div className="form-card">
-        <div className="fc-head">
-          <div className="fc-head-t">Remarks / Issues</div>
-          <div className="fc-head-s">Optional — note any delays or quality issues</div>
-        </div>
-        <div className="fc-body">
-          <textarea className="remarks-ta" placeholder="e.g. Panel alignment delayed due to wind. QC passed for rows 1-8."
-            value={remarks} onChange={e => setRemarks(e.target.value)}></textarea>
-          <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
-            {['No issues','Material delay','QC failed','Weather delay','Equipment issue'].map(t => (
-              <button key={t} onClick={() => setRemarks(t)}
-                style={{padding:'4px 10px',background:'#F3F4F6',border:'1.5px solid var(--bdr)',
-                  borderRadius:8,fontSize:11,fontWeight:500,cursor:'pointer',fontFamily:'inherit',
-                  color:'var(--txt2)',transition:'background .1s'}}>{t}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="scroll-pb" />
-
-      <button className="submit-btn" disabled={!qty || Number(qty) <= 0} onClick={() => onSubmit({qty, remarks, activity})}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-        Submit Progress Entry
-      </button>
-    </div>
-  );
-};
-
-// ── CONFIRMATION ───────────────────────────────────────────────────
-const ConfirmScreen = ({ submission, onHome }) => (
-  <div className="confirm-bg">
-    <StatusBar />
-    <div style={{height:40}} />
-    <div className="confirm-icon"><IcoCheck /></div>
-    <div className="confirm-title">Progress Submitted!</div>
-    <div className="confirm-sub">
-      Your entry has been logged and sent to the project supervisor for review.
-    </div>
-
-    <div className="confirm-summary">
-      {[
-        ['Activity',    submission.activity.name],
-        ['Activity ID', submission.activity.id],
-        ['Project',     ENGINEER.project],
-        ['Block',       ENGINEER.block],
-        ['Quantity',    `${submission.qty} ${submission.activity.uom}`],
-        ['Date',        '29 Jun 2026'],
-        ['Submitted by',ENGINEER.name],
-        ['Vendor',      'M/s Electrocraft'],
-        ['Status',      '⏳ Pending Review'],
-      ].map(([k,v]) => (
-        <div key={k} className="cs-row">
-          <span className="cs-k">{k}</span>
-          <span className="cs-v">{v}</span>
-        </div>
-      ))}
-    </div>
-
-    <button className="confirm-btn-p" onClick={onHome}>Log Another Activity</button>
-    <button className="confirm-btn-s" onClick={onHome}>Back to Home</button>
-  </div>
-);
-
-// ── HISTORY SCREEN ──────────────────────────────────────────────────
-const HistoryScreen = ({ onNav, activeNav }) => {
-  const grouped = {};
-  HISTORY.forEach(h => { if (!grouped[h.date]) grouped[h.date] = []; grouped[h.date].push(h); });
-  return (
-    <div style={{background:'var(--bg)',minHeight:780}}>
-      <StatusBar dark />
-      <div className="app-header">
-        <div style={{width:32}}></div>
-        <div style={{textAlign:'center'}}>
-          <div className="ah-title">My Submissions</div>
-          <div className="ah-sub">All progress entries</div>
-        </div>
-        <div className="ah-right">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" strokeWidth="1.5"><circle cx="7" cy="7" r="4"/><path d="M11 11l3 3" strokeLinecap="round"/></svg>
-        </div>
-      </div>
-      <div style={{paddingTop:8}}>
-        {Object.entries(grouped).map(([date, items]) => (
-          <div key={date}>
-            <div className="date-badge">{date}</div>
-            {items.map((h,i) => (
-              <div key={i} className="hist-item">
-                <div className="hi-row">
-                  <div className="hi-name">{h.act}</div>
-                  <span className={`chip ${h.status==='Approved'?'c-g':'c-y'}`}>{h.status}</span>
-                </div>
-                <div className="hi-meta">
-                  <span>{h.qty} {h.uom}</span>
-                  <span className="chip c-n" style={{fontSize:10,padding:'1px 5px'}}>{h.id}</span>
-                  <span>Block 12</span>
-                </div>
+          <div style={{ paddingTop: 8 }}>
+            {Object.entries(grouped).map(([date, items]) => (
+              <div key={date}>
+                <div className="date-badge">{date}</div>
+                {items.map((h, i) => (
+                  <div key={i} className="hist-item">
+                    <div className="hi-row">
+                      <div className="hi-name">{h.act}</div>
+                      <span className={`chip ${h.status === 'Approved' ? 'c-g' : 'c-y'}`}>{h.status}</span>
+                    </div>
+                    <div className="hi-meta">
+                      <span>{h.qty} {h.uom}</span>
+                      <span className="chip c-n" style={{ fontSize: 10, padding: '1px 5px' }}>{h.id}</span>
+                      <span>Block 12</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
+          <div className="scroll-pb" />
+          <BottomNav active={activeNav} onNav={onNav} />
+        </div>
+      );
+    };
+
+    // ── PROFILE SCREEN ──────────────────────────────────────────────────
+    const ProfileScreen = ({ onNav, activeNav, onLogout }) => (
+      <div style={{ background: 'var(--bg)', minHeight: 780 }}>
+        <StatusBar dark />
+        <div style={{ background: 'linear-gradient(135deg,#0C1D56,#1B2E8A)', padding: '20px 18px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 54, height: 54, background: 'rgba(255,255,255,.15)', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: '#fff'
+            }}>SK</div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>{ENGINEER.name}</div>
+              <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>{ENGINEER.id} · Field Engineer</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', marginTop: 2 }}>M/s Electrocraft Solutions</div>
+            </div>
+          </div>
+        </div>
+        {[
+          { label: 'Project Assignment', val: 'TPSSL-RJ-001 · Block 12' },
+          { label: 'Vendor ID', val: 'V-001' },
+          { label: 'Today\'s Entries', val: '3 submitted' },
+          { label: 'This Week', val: '18 entries · 892 qty' },
+          { label: 'Approval Rate', val: '94.2%' },
+        ].map((r, i) => (
+          <div key={i} style={{
+            margin: '0 14px', background: '#fff', borderRadius: i === 0 ? '14px 14px 0 0' : i === 4 ? '0 0 14px 14px' : '0',
+            padding: '12px 14px', borderBottom: i < 4 ? '1px solid var(--bdr)' : 'none',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: i === 4 ? 10 : 0
+          }}>
+            <span style={{ fontSize: 13, color: 'var(--txt2)' }}>{r.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--txt)' }}>{r.val}</span>
+          </div>
         ))}
+        <div style={{ margin: '0 14px' }}>
+          <button onClick={onLogout}
+            style={{
+              width: '100%', height: 46, background: 'var(--ebg)', border: '1.5px solid #FECACA',
+              borderRadius: 12, color: 'var(--e)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'IBM Plex Sans, sans-serif'
+            }}>Sign Out</button>
+        </div>
+        <div className="scroll-pb" />
+        <BottomNav active={activeNav} onNav={onNav} />
       </div>
-      <div className="scroll-pb" />
-      <BottomNav active={activeNav} onNav={onNav} />
-    </div>
-  );
-};
+    );
 
-// ── PROFILE SCREEN ──────────────────────────────────────────────────
-const ProfileScreen = ({ onNav, activeNav, onLogout }) => (
-  <div style={{background:'var(--bg)',minHeight:780}}>
-    <StatusBar dark />
-    <div style={{background:'linear-gradient(135deg,#0C1D56,#1B2E8A)',padding:'20px 18px 24px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:14}}>
-        <div style={{width:54,height:54,background:'rgba(255,255,255,.15)',borderRadius:'50%',
-          display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:700,color:'#fff'}}>SK</div>
+    // ── ROOT APP ──────────────────────────────────────────────────────────
+    function FieldEngineerApp() {
+      const [screen, setScreen] = useState('login');   // login | home | entry | confirm | history | profile
+      const [activeNav, setActiveNav] = useState('home');
+      const [selActivity, setSelActivity] = useState(null);
+      const [submission, setSubmission] = useState(null);
+      const [prevScreen, setPrevScreen] = useState(null);
+
+      const go = (s) => { setPrevScreen(screen); setScreen(s); };
+
+      const handleNav = (id) => {
+        setActiveNav(id);
+        if (id === 'home') go('home');
+        else if (id === 'tasks') go('home');
+        else if (id === 'history') go('history');
+        else if (id === 'profile') go('profile');
+      };
+
+      const screens = { login: 0, home: 1, entry: 2, confirm: 3, history: 1, profile: 1 };
+      const cls = (s) => {
+        if (s === screen) return '';
+        const cur = screens[screen] ?? 0;
+        const tgt = screens[s] ?? 0;
+        return tgt < cur ? 'hidden-left' : 'hidden-right';
+      };
+
+      return (
         <div>
-          <div style={{fontSize:17,fontWeight:700,color:'#fff'}}>{ENGINEER.name}</div>
-          <div style={{fontSize:11.5,color:'rgba(255,255,255,.55)',marginTop:2}}>{ENGINEER.id} · Field Engineer</div>
-          <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginTop:2}}>M/s Electrocraft Solutions</div>
+          <div className="screen-wrap">
+            <div className={`screen ${cls('login')}`}>
+              <LoginScreen onLogin={() => go('home')} />
+            </div>
+            <div className={`screen ${cls('home')}`}>
+              <HomeScreen onSelectActivity={a => { setSelActivity(a); go('entry'); }} onNav={handleNav} activeNav={activeNav} />
+            </div>
+            <div className={`screen ${cls('entry')}`}>
+              {selActivity && <EntryForm activity={selActivity} onBack={() => go('home')}
+                onSubmit={s => { setSubmission(s); go('confirm'); }} />}
+            </div>
+            <div className={`screen ${cls('confirm')}`}>
+              {submission && <ConfirmScreen submission={submission} onHome={() => { setScreen('home'); setActiveNav('home'); }} />}
+            </div>
+            <div className={`screen ${cls('history')}`}>
+              <HistoryScreen onNav={handleNav} activeNav={activeNav} />
+            </div>
+            <div className={`screen ${cls('profile')}`}>
+              <ProfileScreen onNav={handleNav} activeNav={activeNav} onLogout={() => go('login')} />
+            </div>
+          </div>
+          <div className="home-bar"><div className="home-pill"></div></div>
         </div>
-      </div>
-    </div>
-    {[
-      {label:'Project Assignment', val:'TPSSL-RJ-001 · Block 12'},
-      {label:'Vendor ID', val:'V-001'},
-      {label:'Today\'s Entries', val:'3 submitted'},
-      {label:'This Week', val:'18 entries · 892 qty'},
-      {label:'Approval Rate', val:'94.2%'},
-    ].map((r,i) => (
-      <div key={i} style={{margin:'0 14px', background:'#fff', borderRadius:i===0?'14px 14px 0 0':i===4?'0 0 14px 14px':'0',
-        padding:'12px 14px', borderBottom:i<4?'1px solid var(--bdr)':'none',
-        display:'flex',justifyContent:'space-between',alignItems:'center', marginBottom:i===4?10:0}}>
-        <span style={{fontSize:13,color:'var(--txt2)'}}>{r.label}</span>
-        <span style={{fontSize:13,fontWeight:600,color:'var(--txt)'}}>{r.val}</span>
-      </div>
-    ))}
-    <div style={{margin:'0 14px'}}>
-      <button onClick={onLogout}
-        style={{width:'100%',height:46,background:'var(--ebg)',border:'1.5px solid #FECACA',
-          borderRadius:12,color:'var(--e)',fontSize:14,fontWeight:600,cursor:'pointer',
-          fontFamily:'IBM Plex Sans, sans-serif'}}>Sign Out</button>
-    </div>
-    <div className="scroll-pb" />
-    <BottomNav active={activeNav} onNav={onNav} />
-  </div>
-);
+      );
+    }
 
-// ── ROOT APP ──────────────────────────────────────────────────────────
-function FieldEngineerApp() {
-  const [screen, setScreen]       = useState('login');   // login | home | entry | confirm | history | profile
-  const [activeNav, setActiveNav] = useState('home');
-  const [selActivity, setSelActivity] = useState(null);
-  const [submission, setSubmission]   = useState(null);
-  const [prevScreen, setPrevScreen]   = useState(null);
+    ReactDOM.createRoot(document.getElementById('fe-app')).render(<FieldEngineerApp />);
+  </script>
 
-  const go = (s) => { setPrevScreen(screen); setScreen(s); };
-
-  const handleNav = (id) => {
-    setActiveNav(id);
-    if      (id === 'home')    go('home');
-    else if (id === 'tasks')   go('home');
-    else if (id === 'history') go('history');
-    else if (id === 'profile') go('profile');
-  };
-
-  const screens = { login: 0, home: 1, entry: 2, confirm: 3, history: 1, profile: 1 };
-  const cls = (s) => {
-    if (s === screen) return '';
-    const cur = screens[screen] ?? 0;
-    const tgt = screens[s]    ?? 0;
-    return tgt < cur ? 'hidden-left' : 'hidden-right';
-  };
-
-  return (
-    <div>
-      <div className="screen-wrap">
-        <div className={`screen ${cls('login')}`}>
-          <LoginScreen onLogin={() => go('home')} />
-        </div>
-        <div className={`screen ${cls('home')}`}>
-          <HomeScreen onSelectActivity={a => { setSelActivity(a); go('entry'); }} onNav={handleNav} activeNav={activeNav} />
-        </div>
-        <div className={`screen ${cls('entry')}`}>
-          {selActivity && <EntryForm activity={selActivity} onBack={() => go('home')}
-            onSubmit={s => { setSubmission(s); go('confirm'); }} />}
-        </div>
-        <div className={`screen ${cls('confirm')}`}>
-          {submission && <ConfirmScreen submission={submission} onHome={() => { setScreen('home'); setActiveNav('home'); }} />}
-        </div>
-        <div className={`screen ${cls('history')}`}>
-          <HistoryScreen onNav={handleNav} activeNav={activeNav} />
-        </div>
-        <div className={`screen ${cls('profile')}`}>
-          <ProfileScreen onNav={handleNav} activeNav={activeNav} onLogout={() => go('login')} />
-        </div>
-      </div>
-      <div className="home-bar"><div className="home-pill"></div></div>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('fe-app')).render(<FieldEngineerApp />);
-</script>
-
-<template id="__bundler_thumbnail" data-bg-color="#0C1D56">
-  <svg viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg">
-    <rect width="160" height="100" fill="#1a1a2e"/>
-    <!-- device -->
-    <rect x="52" y="4" width="56" height="92" rx="10" fill="#111" stroke="#333" stroke-width="1"/>
-    <rect x="54" y="6" width="52" height="88" rx="8" fill="#0C1D56"/>
-    <!-- dynamic island -->
-    <rect x="71" y="9" width="18" height="5" rx="2.5" fill="#000"/>
-    <!-- status bar -->
-    <rect x="58" y="17" width="10" height="3" rx="1" fill="rgba(255,255,255,.3)"/>
-    <!-- hero card -->
-    <rect x="56" y="22" width="48" height="20" rx="4" fill="#152472"/>
-    <rect x="60" y="26" width="20" height="3" rx="1" fill="rgba(255,255,255,.7)"/>
-    <rect x="60" y="31" width="30" height="2" rx="1" fill="rgba(255,255,255,.3)"/>
-    <rect x="60" y="35" width="12" height="4" rx="2" fill="rgba(255,255,255,.1)"/>
-    <!-- stat row -->
-    <rect x="56" y="45" width="14" height="12" rx="3" fill="white"/>
-    <rect x="73" y="45" width="14" height="12" rx="3" fill="white"/>
-    <rect x="90" y="45" width="14" height="12" rx="3" fill="white"/>
-    <!-- activity cards -->
-    <rect x="56" y="60" width="48" height="13" rx="3" fill="white"/>
-    <rect x="59" y="63" width="22" height="3" rx="1" fill="#111827" opacity=".7"/>
-    <rect x="59" y="68" width="15" height="2" rx="1" fill="#9CA3AF"/>
-    <rect x="89" y="61" width="12" height="5" rx="2" fill="#D42027"/>
-    <rect x="56" y="76" width="48" height="13" rx="3" fill="white"/>
-    <rect x="59" y="79" width="22" height="3" rx="1" fill="#111827" opacity=".7"/>
-    <rect x="59" y="84" width="15" height="2" rx="1" fill="#9CA3AF"/>
-    <rect x="89" y="77" width="12" height="5" rx="2" fill="#1D4ED8"/>
-    <!-- nav bar -->
-    <rect x="54" y="88" width="52" height="6" rx="0" fill="white"/>
-  </svg>
-</template>
+  <template id="__bundler_thumbnail" data-bg-color="#0C1D56">
+    <svg viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="100" fill="#1a1a2e" />
+      <!-- device -->
+      <rect x="52" y="4" width="56" height="92" rx="10" fill="#111" stroke="#333" stroke-width="1" />
+      <rect x="54" y="6" width="52" height="88" rx="8" fill="#0C1D56" />
+      <!-- dynamic island -->
+      <rect x="71" y="9" width="18" height="5" rx="2.5" fill="#000" />
+      <!-- status bar -->
+      <rect x="58" y="17" width="10" height="3" rx="1" fill="rgba(255,255,255,.3)" />
+      <!-- hero card -->
+      <rect x="56" y="22" width="48" height="20" rx="4" fill="#152472" />
+      <rect x="60" y="26" width="20" height="3" rx="1" fill="rgba(255,255,255,.7)" />
+      <rect x="60" y="31" width="30" height="2" rx="1" fill="rgba(255,255,255,.3)" />
+      <rect x="60" y="35" width="12" height="4" rx="2" fill="rgba(255,255,255,.1)" />
+      <!-- stat row -->
+      <rect x="56" y="45" width="14" height="12" rx="3" fill="white" />
+      <rect x="73" y="45" width="14" height="12" rx="3" fill="white" />
+      <rect x="90" y="45" width="14" height="12" rx="3" fill="white" />
+      <!-- activity cards -->
+      <rect x="56" y="60" width="48" height="13" rx="3" fill="white" />
+      <rect x="59" y="63" width="22" height="3" rx="1" fill="#111827" opacity=".7" />
+      <rect x="59" y="68" width="15" height="2" rx="1" fill="#9CA3AF" />
+      <rect x="89" y="61" width="12" height="5" rx="2" fill="#D42027" />
+      <rect x="56" y="76" width="48" height="13" rx="3" fill="white" />
+      <rect x="59" y="79" width="22" height="3" rx="1" fill="#111827" opacity=".7" />
+      <rect x="59" y="84" width="15" height="2" rx="1" fill="#9CA3AF" />
+      <rect x="89" y="77" width="12" height="5" rx="2" fill="#1D4ED8" />
+      <!-- nav bar -->
+      <rect x="54" y="88" width="52" height="6" rx="0" fill="white" />
+    </svg>
+  </template>
 </body>
+
 </html>
